@@ -1,0 +1,21 @@
+{
+  "name": "TTRSS",
+  "id": "ttrss",
+  "available": true,
+  "short_desc": "Tiny Tiny RSS is a free and open source web-based news feed (RSS/Atom) reader and aggregator.",
+  "author": "cthulhoo",
+  "port": 8382,
+  "categories": [
+    "utilities"
+  ],
+  "description": "Tiny Tiny RSS is a free and open source web-based news feed (RSS/Atom) reader and aggregator.",
+  "tipi_version": 2,
+  "version": "v1.11.0",
+  "source": "https://gitlab.tt-rss.org/tt-rss/tt-rss/container_registry",
+  "exposable": true,
+  "supported_architectures": ["amd64"],
+  "created_at": 1745082405284,
+  "updated_at": 1745674974072,
+  "dynamic_config": true,
+  "form_fields": []
+}
