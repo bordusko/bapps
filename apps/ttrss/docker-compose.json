@@ -120,6 +120,8 @@
         "traefik.http.routers.ttrss-local.tls": "true",
         "traefik.http.routers.ttrss-local.service": "ttrss",
         "traefik.http.services.ttrss.loadbalancer.server.port": "80",
+        "traefik.http.middlewares.ttrss-prefix.addprefix.prefix": "/tt-rss",
+        "traefik.http.routers.ttrss-local.middlewares": "ttrss-prefix",
         "runtipi.managed": "true",
         "runtipi.appurn": "ttrss:main"
       }
