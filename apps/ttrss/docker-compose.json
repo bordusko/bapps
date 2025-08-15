@@ -93,7 +93,7 @@
       "image": "cthulhoo/ttrss-web-nginx:latest",
       "restart": "unless-stopped",
       "networks": [
-        { "name": "tipi_main_network", "gw_priority": 1 },
+        { "name": "runtipi_tipi_main_network", "gw_priority": 1 },
         { "name": "ttrss_network", "gw_priority": 0 }
       ],
       "environment": {
@@ -127,7 +127,7 @@
   ],
   "networks": [
     {
-      "name": "tipi_main_network",
+      "name": "runtipi_tipi_main_network",
       "external": true
     },
     {
