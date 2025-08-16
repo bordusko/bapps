@@ -1,0 +1,106 @@
+version: "3"
+
+services:
+  ttrss-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    networks:
+      ttrss_network:
+        gw_priority: 0
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    volumes:
+      - ${APP_DATA_DIR}/data/ttrss-db:/var/lib/postgresql/data
+    labels:
+      runtipi.managed: true
+      runtipi.appurn: ttrss:main
+
+  ttrss-app:
+    image: cthulhoo/ttrss-fpm-pgsql-static:latest
+    restart: unless-stopped
+    networks:
+      ttrss_network:
+        gw_priority: 0
+    environment:
+      TTRSS_DB_HOST: ttrss-db
+      TTRSS_DB_USER: postgres
+      TTRSS_DB_NAME: postgres
+      TTRSS_DB_PASS: password
+    volumes:
+      - ${APP_DATA_DIR}/data/ttrss-app:/var/www/html
+      - ./config.d:/opt/tt-rss/config.d:ro
+    depends_on:
+      - ttrss-db
+    labels:
+      runtipi.managed: true
+      runtipi.appurn: ttrss:main
+
+  ttrss-updater:
+    image: cthulhoo/ttrss-fpm-pgsql-static:latest
+    restart: unless-stopped
+    networks:
+      ttrss_network:
+        gw_priority: 0
+    environment:
+      TTRSS_DB_HOST: ttrss-db
+      TTRSS_DB_USER: postgres
+      TTRSS_DB_NAME: postgres
+      TTRSS_DB_PASS: password
+    volumes:
+      - ${APP_DATA_DIR}/data/ttrss-app:/var/www/html
+      - ./config.d:/opt/tt-rss/config.d:ro
+    depends_on:
+      - ttrss-app
+    command: /opt/tt-rss/updater.sh
+    labels:
+      runtipi.managed: true
+      runtipi.appurn: ttrss:main
+
+  ttrss-web:
+    image: cthulhoo/ttrss-web-nginx:latest
+    restart: unless-stopped
+    networks:
+      runtipi_tipi_main_network:
+        gw_priority: 1
+      ttrss_network:
+        gw_priority: 0
+    environment:
+      TTRSS_DB_HOST: ttrss-db
+      TTRSS_DB_USER: postgres
+      TTRSS_DB_NAME: postgres
+      TTRSS_DB_PASS: password
+      HTTP_PORT: "80"
+      TTRSS_ROOT: /var/www/html/tt-rss
+    volumes:
+      - ${APP_DATA_DIR}/data/ttrss-app:/var/www/html/tt-rss:ro
+    depends_on:
+      - ttrss-app
+    labels:
+      traefik.enable: true
+      traefik.docker.network: runtipi_tipi_main_network
+      traefik.http.middlewares.ttrss-web-redirect.redirectscheme.scheme: https
+      traefik.http.services.ttrss.loadbalancer.server.port: "80"
+      traefik.http.routers.ttrss-local-insecure.rule: Host(`ttrss.${LOCAL_DOMAIN}`)
+      traefik.http.routers.ttrss-local-insecure.entrypoints: web
+      traefik.http.routers.ttrss-local-insecure.service: ttrss
+      traefik.http.routers.ttrss-local-insecure.middlewares: ttrss-web-redirect
+      traefik.http.routers.ttrss-local.rule: Host(`ttrss.${LOCAL_DOMAIN}`)
+      traefik.http.routers.ttrss-local.entrypoints: websecure
+      traefik.http.routers.ttrss-local.service: ttrss
+      traefik.http.routers.ttrss-local.tls: true
+      runtipi.managed: true
+      runtipi.appurn: ttrss:main
+
+networks:
+  runtipi_tipi_main_network:
+    name: runtipi_tipi_main_network
+    external: true
+
+  ttrss_network:
+    external: false
+    ipam:
+      config:
+        - subnet: 10.128.14.0/24
+
